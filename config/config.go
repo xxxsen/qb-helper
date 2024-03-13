@@ -13,7 +13,7 @@ type QBConfig struct {
 }
 
 type Config struct {
-	QBConfig  *QBConfig        `json:"qb_config"`
+	QBConfig  QBConfig         `json:"qb_config"`
 	LogConfig logger.LogConfig `json:"log_config"`
 	UaList    []string         `json:"ua_list"`
 	Interval  int              `json:"interval"`

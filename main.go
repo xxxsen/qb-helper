@@ -20,6 +20,7 @@ func main() {
 	}
 	//init log
 	logkit := logger.Init(conf.LogConfig.File, conf.LogConfig.Level, int(conf.LogConfig.FileCount), int(conf.LogConfig.FileSize), int(conf.LogConfig.KeepDays), conf.LogConfig.Console)
+	logkit.Info("recv config", zap.Any("config", conf))
 	svc, err := cleaner.New(
 		cleaner.WithQBConfig(conf.QBConfig.Host, conf.QBConfig.Username, conf.QBConfig.Password),
 		cleaner.WithInterval(time.Duration(conf.Interval)*time.Second),
