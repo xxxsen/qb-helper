@@ -2,39 +2,26 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"github.com/xxxsen/common/logger"
+	"os"
 )
 
-type AuthConfig struct {
+type QBConfig struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Host     string `json:"host"`
 }
 
-type CronItem struct {
-	Name   string      `json:"name"`
-	Args   interface{} `json:"args"`
-	Enable bool        `json:"enable"`
-}
-
-type LogConfig struct {
-	File    string `json:"file"`
-	Level   string `json:"level"`
-	Size    int    `json:"size"`
-	Rotate  int    `json:"rotate"`
-	KeepDay int    `json:"keep_day"`
-	Console bool   `json:"console"`
-}
-
 type Config struct {
-	Auth     *AuthConfig `json:"auth"`
-	CronList []*CronItem `json:"cron_config"`
-	Log      LogConfig   `json:"log"`
+	QBConfig  *QBConfig        `json:"qb_config"`
+	LogConfig logger.LogConfig `json:"log_config"`
+	UaList    []string         `json:"ua_list"`
+	Interval  int              `json:"interval"`
 }
 
 func Parse(file string) (*Config, error) {
 	cfg := &Config{}
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}

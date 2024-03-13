@@ -2,14 +2,15 @@ package main
 
 import (
 	"flag"
-	"qb-helper/client"
+	"github.com/xxxsen/common/logger"
+	"go.uber.org/zap"
+	"log"
+	"qb-helper/cleaner"
 	"qb-helper/config"
-	"qb-helper/cron"
-
-	"github.com/xxxsen/log"
+	"time"
 )
 
-var cfg = flag.String("cfg", "./config.json", "config file")
+var cfg = flag.String("config", "./config.json", "config file")
 
 func main() {
 	flag.Parse()
@@ -18,33 +19,17 @@ func main() {
 		log.Fatalf("Parse config fail, err:%v", err)
 	}
 	//init log
-	log.Init(conf.Log.File, log.StringToLevel(conf.Log.Level), conf.Log.Rotate, conf.Log.Size, conf.Log.KeepDay, conf.Log.Console)
-
-	//init qbapi
-	if err := client.Init(conf.Auth.Username, conf.Auth.Password, conf.Auth.Host); err != nil {
-		log.Fatalf("Init qbclient failed, user:%s, pwd:%s, host:%s, err:%v", conf.Auth.Username, conf.Auth.Password, conf.Auth.Host, err)
+	logkit := logger.Init(conf.LogConfig.File, conf.LogConfig.Level, int(conf.LogConfig.FileCount), int(conf.LogConfig.FileSize), int(conf.LogConfig.KeepDays), conf.LogConfig.Console)
+	svc, err := cleaner.New(
+		cleaner.WithQBConfig(conf.QBConfig.Host, conf.QBConfig.Username, conf.QBConfig.Password),
+		cleaner.WithInterval(time.Duration(conf.Interval)*time.Second),
+		cleaner.WithAddRules(conf.UaList...),
+	)
+	if err != nil {
+		logkit.Fatal("init cleaner failed", zap.Error(err))
 	}
-
-	//init cron
-	cg := cron.NewBoostrap()
-	for _, cr := range conf.CronList {
-		if !cr.Enable {
-			log.Infof("Cron:%s, disabled, skip", cr.Name)
-			continue
-		}
-		log.Debugf("Init cron:%s with args:%v", cr.Name, cr.Args)
-		creator, err := cron.Get(cr.Name)
-		if err != nil {
-			log.Fatalf("Get cron:%s failed, err:%v", cr.Name, err)
-		}
-		cri, err := creator(cr.Args)
-		if err != nil {
-			log.Fatalf("Init cron:%s failed, args:%v, err:%v")
-		}
-		log.Infof("Cron:%s init succ", cr.Name)
-		cg.Add(cri)
+	if err := svc.Start(); err != nil {
+		logkit.Fatal("run cleaner failed", zap.Error(err))
 	}
-	log.Infof("All cron start finished")
-	cg.Start()
 	select {}
 }
