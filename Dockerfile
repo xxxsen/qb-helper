@@ -9,6 +9,4 @@ FROM alpine:3.12
 
 COPY --from=0 /build/qb-helper /bin/
 
-VOLUME /config
-
-CMD ["/bin/qb-helper", "--config", "/config/config.json"]
+ENTRYPOINT ["/bin/qb-helper"]
