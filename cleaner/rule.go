@@ -66,10 +66,11 @@ type ipRuleSet struct {
 }
 
 func (r *ipRuleSet) isMatch(strip string) bool {
-	if _, ok := r.ip[strip]; ok {
+	ip := net.ParseIP(strip)
+	normalizedIP := ip.String()
+	if _, ok := r.ip[normalizedIP]; ok {
 		return true
 	}
-	ip := net.ParseIP(strip)
 	if ip == nil {
 		return false
 	}
@@ -96,7 +97,11 @@ func makeIPRuleSet(rs []string) (*ipRuleSet, error) {
 			set.cidr = append(set.cidr, cidr)
 			continue
 		}
-		set.ip[item] = struct{}{}
+		ip := net.ParseIP(item)
+		if ip == nil {
+			return nil, fmt.Errorf("invalid ip:%s", item)
+		}
+		set.ip[ip.String()] = struct{}{}
 	}
 	return set, nil
 }
