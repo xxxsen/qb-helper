@@ -13,10 +13,12 @@ type QBConfig struct {
 }
 
 type Config struct {
-	QBConfig  QBConfig         `json:"qb_config"`
-	LogConfig logger.LogConfig `json:"log_config"`
-	UaList    []string         `json:"ua_list"`
-	Interval  int              `json:"interval"`
+	QBConfig        QBConfig         `json:"qb_config"`
+	LogConfig       logger.LogConfig `json:"log_config"`
+	BlacklistUa     []string         `json:"blacklist_ua"`
+	BlacklistRegion []string         `json:"blacklist_region"`
+	BlacklistIP     []string         `json:"blacklist_ip"`
+	Interval        int              `json:"interval"`
 }
 
 func Parse(file string) (*Config, error) {

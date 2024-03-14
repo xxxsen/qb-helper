@@ -24,7 +24,9 @@ func main() {
 	svc, err := cleaner.New(
 		cleaner.WithQBConfig(conf.QBConfig.Host, conf.QBConfig.Username, conf.QBConfig.Password),
 		cleaner.WithInterval(time.Duration(conf.Interval)*time.Second),
-		cleaner.WithAddRules(conf.UaList...),
+		cleaner.WithAddUaRule(conf.BlacklistUa...),
+		cleaner.WithAddIPRule(conf.BlacklistIP...),
+		cleaner.WithAddRegionRule(conf.BlacklistRegion...),
 	)
 	if err != nil {
 		logkit.Fatal("init cleaner failed", zap.Error(err))

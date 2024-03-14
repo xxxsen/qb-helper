@@ -5,7 +5,9 @@ import (
 )
 
 type config struct {
-	rs []string
+	uaRs     []string
+	ipRs     []string
+	regionRs []string
 
 	//
 	interval time.Duration
@@ -23,9 +25,21 @@ func WithQBConfig(host, u, p string) Option {
 	}
 }
 
-func WithAddRules(rs ...string) Option {
+func WithAddUaRule(rs ...string) Option {
 	return func(c *config) {
-		c.rs = append(c.rs, rs...)
+		c.uaRs = append(c.uaRs, rs...)
+	}
+}
+
+func WithAddIPRule(rs ...string) Option {
+	return func(c *config) {
+		c.ipRs = append(c.ipRs, rs...)
+	}
+}
+
+func WithAddRegionRule(rs ...string) Option {
+	return func(c *config) {
+		c.regionRs = append(c.regionRs, rs...)
 	}
 }
 

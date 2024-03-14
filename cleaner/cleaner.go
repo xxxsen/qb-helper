@@ -16,9 +16,11 @@ const (
 )
 
 type Cleaner struct {
-	api  *qbapi.QBAPI
-	c    *config
-	rset *uaRuleSet
+	api        *qbapi.QBAPI
+	c          *config
+	uaRule     *strRuleSet
+	regionRule *strRuleSet
+	ipRule     *ipRuleSet
 }
 
 func New(opts ...Option) (*Cleaner, error) {
@@ -33,11 +35,19 @@ func New(opts ...Option) (*Cleaner, error) {
 	if err != nil {
 		return nil, fmt.Errorf("new api fail, err:%w", err)
 	}
-	rst, err := makeUserAgentRuleSet(c.rs)
+	uaRule, err := makeStrRuleSet(c.uaRs)
 	if err != nil {
-		return nil, fmt.Errorf("make rule set failed, err:%w", err)
+		return nil, fmt.Errorf("make ua rule set failed, err:%w", err)
 	}
-	return &Cleaner{api: api, c: c, rset: rst}, nil
+	regionRule, err := makeStrRuleSet(c.regionRs)
+	if err != nil {
+		return nil, fmt.Errorf("make region rule set failed, err:%w", err)
+	}
+	ipRule, err := makeIPRuleSet(c.ipRs)
+	if err != nil {
+		return nil, fmt.Errorf("make ip rule set failed, err:%w", err)
+	}
+	return &Cleaner{api: api, c: c, uaRule: uaRule, regionRule: regionRule, ipRule: ipRule}, nil
 }
 
 func (c *Cleaner) Start() error {
@@ -93,9 +103,17 @@ func (c *Cleaner) ensureLogin(ctx context.Context) error {
 	return nil
 }
 
-func (c *Cleaner) isBlackListUserAgent(info *qbapi.TorrentPeerItem) bool {
-	ua := info.Client
-	return c.rset.isMatch(ua)
+func (c *Cleaner) isInBlackList(info *qbapi.TorrentPeerItem) bool {
+	if c.uaRule.isMatch(info.Client) {
+		return true
+	}
+	if c.regionRule.isMatch(info.CountryCode) {
+		return true
+	}
+	if c.ipRule.isMatch(info.Ip) {
+		return true
+	}
+	return false
 }
 
 func (c *Cleaner) doCheckLogic(ctx context.Context, item *qbapi.TorrentListItem) error {
@@ -107,7 +125,7 @@ func (c *Cleaner) doCheckLogic(ctx context.Context, item *qbapi.TorrentListItem)
 	pd := peers.Peers
 	for addr, info := range pd {
 		//检查ban客户端
-		if c.isBlackListUserAgent(info) {
+		if c.isInBlackList(info) {
 			banConns[addr] = info
 			continue
 		}
