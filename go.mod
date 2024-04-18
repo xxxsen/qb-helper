@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/stretchr/testify v1.8.4
 	github.com/xxxsen/common v0.1.2
-	github.com/xxxsen/qbapi v0.0.1
+	github.com/xxxsen/qbapi v0.0.3
 	github.com/xxxsen/runner v0.0.1
 	go.uber.org/zap v1.23.0
 )

@@ -2,12 +2,13 @@ package main
 
 import (
 	"flag"
-	"github.com/xxxsen/common/logger"
-	"go.uber.org/zap"
 	"log"
 	"qb-helper/cleaner"
 	"qb-helper/config"
 	"time"
+
+	"github.com/xxxsen/common/logger"
+	"go.uber.org/zap"
 )
 
 var cfg = flag.String("config", "./config.json", "config file")
@@ -26,6 +27,7 @@ func main() {
 		cleaner.WithInterval(time.Duration(conf.Interval)*time.Second),
 		cleaner.WithAddUaRule(conf.BlacklistUa...),
 		cleaner.WithAddIPRule(conf.BlacklistIP...),
+		cleaner.WithAddPeerIDRule(conf.BlacklistPeerID...),
 		cleaner.WithAddRegionRule(conf.BlacklistRegion...),
 	)
 	if err != nil {

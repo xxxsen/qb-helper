@@ -8,6 +8,7 @@ type config struct {
 	uaRs     []string
 	ipRs     []string
 	regionRs []string
+	peerIDRs []string
 
 	//
 	interval time.Duration
@@ -34,6 +35,12 @@ func WithAddUaRule(rs ...string) Option {
 func WithAddIPRule(rs ...string) Option {
 	return func(c *config) {
 		c.ipRs = append(c.ipRs, rs...)
+	}
+}
+
+func WithAddPeerIDRule(rs ...string) Option {
+	return func(c *config) {
+		c.peerIDRs = append(c.peerIDRs, rs...)
 	}
 }
 

@@ -2,8 +2,9 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/xxxsen/common/logger"
 	"os"
+
+	"github.com/xxxsen/common/logger"
 )
 
 type QBConfig struct {
@@ -18,6 +19,7 @@ type Config struct {
 	BlacklistUa     []string         `json:"blacklist_ua"`
 	BlacklistRegion []string         `json:"blacklist_region"`
 	BlacklistIP     []string         `json:"blacklist_ip"`
+	BlacklistPeerID []string         `json:"blacklist_peer_id"`
 	Interval        int              `json:"interval"`
 }
 

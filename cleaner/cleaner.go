@@ -3,12 +3,13 @@ package cleaner
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/xxxsen/common/logutil"
 	"github.com/xxxsen/common/trace"
 	"github.com/xxxsen/qbapi"
 	"github.com/xxxsen/runner"
 	"go.uber.org/zap"
-	"time"
 )
 
 const (
@@ -21,6 +22,7 @@ type Cleaner struct {
 	uaRule     *strRuleSet
 	regionRule *strRuleSet
 	ipRule     *ipRuleSet
+	peerIDRule *strRuleSet
 }
 
 func New(opts ...Option) (*Cleaner, error) {
@@ -47,7 +49,11 @@ func New(opts ...Option) (*Cleaner, error) {
 	if err != nil {
 		return nil, fmt.Errorf("make ip rule set failed, err:%w", err)
 	}
-	return &Cleaner{api: api, c: c, uaRule: uaRule, regionRule: regionRule, ipRule: ipRule}, nil
+	peerIDRule, err := makeStrRuleSet(c.peerIDRs)
+	if err != nil {
+		return nil, fmt.Errorf("make peer rule set failed, err:%w", err)
+	}
+	return &Cleaner{api: api, c: c, uaRule: uaRule, regionRule: regionRule, ipRule: ipRule, peerIDRule: peerIDRule}, nil
 }
 
 func (c *Cleaner) Start() error {
@@ -113,6 +119,9 @@ func (c *Cleaner) isInBlackList(info *qbapi.TorrentPeerItem) bool {
 	if c.ipRule.isMatch(info.Ip) {
 		return true
 	}
+	if c.peerIDRule.isMatch(info.PeerIdClient) {
+		return true
+	}
 	return false
 }
 
@@ -143,7 +152,7 @@ func (c *Cleaner) banClients(ctx context.Context, banMap map[string]*qbapi.Torre
 		logutil.GetLogger(ctx).Info("hit rule, ban it", zap.String("addr", addr),
 			zap.String("client", item.Client), zap.String("country", item.Country),
 			zap.String("code", item.CountryCode), zap.String("flags", item.Flags),
-			zap.Float64("progress", item.Progress))
+			zap.Float64("progress", item.Progress), zap.String("peer_id", item.PeerIdClient))
 	}
 	return c.banClient(ctx, peerList)
 }
